@@ -141,8 +141,13 @@ add_definitions(${PCL_DEFINITIONS})
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/pcl_surface_node.cpp)
-add_executable(test_pcl1 src/test.cpp)
-target_link_libraries(test_pcl1 
+add_executable(ply_extractor src/ply_extractor.cpp)
+target_link_libraries(ply_extractor 
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+add_executable(boundary_detector src/boundary.cpp)
+target_link_libraries(boundary_detector 
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
