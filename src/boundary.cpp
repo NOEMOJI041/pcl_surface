@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <pcl/features/boundary.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/features/normal_3d.h>
@@ -43,6 +44,16 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
     normals_msg.header = pcl_conversions::fromPCL(input_cloud_msg->header);
     normals_pub.publish(normals_msg);
 
+    // boundaries :(
+    pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundary_estimation;
+    boundary_estimation.setInputCloud(pcl_cloud_filtered);
+    boundary_estimation.setInputNormals(normals);
+    boundary_estimation.setSearchMethod(tree);
+    boundary_estimation.setKSearch(20);  // You can adjust this value as needed
+
+pcl::PointCloud<pcl::Boundary>::Ptr boundaries(new pcl::PointCloud<pcl::Boundary>);
+boundary_estimation.compute(*boundaries);
+
     visualization_msgs::Marker arrow_marker;
     arrow_marker.header = pcl_conversions::fromPCL(input_cloud_msg->header);
     arrow_marker.ns = "normals";
@@ -59,15 +70,19 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
         arrow_marker.points[1].y = pcl_normals->points[i].y + pcl_normals->points[i].normal_y * 0.1;
         arrow_marker.points[1].z = pcl_normals->points[i].z + pcl_normals->points[i].normal_z * 0.1;
 
-        arrow_marker.scale.x = 0.01;
-        arrow_marker.scale.y = 0.02;
+        arrow_marker.scale.x = 0.005;
+        arrow_marker.scale.y = 0.01;
         arrow_marker.scale.z = 0.0;
-        arrow_marker.color.r = 1.0;
+        if (boundaries->points[i].boundary_point) {
+        // Set marker color for boundary points
+        arrow_marker.color.r = 0.0;
         arrow_marker.color.g = 0.0;
-        arrow_marker.color.b = 0.0;
-        arrow_marker.color.a = 1.0;
-
+        arrow_marker.color.b = 1.0;
+        arrow_marker.color.a = 1.0;  // Blue color for boundaries
         marker_pub.publish(arrow_marker);
+        }   
+        
+
     }
 }
 
