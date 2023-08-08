@@ -1,12 +1,13 @@
 #include <ros/ros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl_ros/filters/voxel_grid.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/search/kdtree.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/filters/voxel_grid.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/Marker.h>
+
 
 ros::Publisher normals_pub;
 ros::Publisher marker_pub;
@@ -50,7 +51,7 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
 
     for (size_t i = 0; i < pcl_normals->points.size(); ++i) {
         arrow_marker.id = static_cast<int>(i);
-        arrow_marker.points.resize(1);
+        arrow_marker.points.resize(2);
         arrow_marker.points[0].x = pcl_normals->points[i].x;
         arrow_marker.points[0].y = pcl_normals->points[i].y;
         arrow_marker.points[0].z = pcl_normals->points[i].z;
