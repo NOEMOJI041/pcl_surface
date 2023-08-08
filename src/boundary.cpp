@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl_ros/filters/voxel_grid.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/search/kdtree.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -14,8 +15,16 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromPCLPointCloud2(*input_cloud_msg, *pcl_cloud);
 
+    // VoxelGrid Downsampling
+    pcl::VoxelGrid<pcl::PointXYZ> down_sample;
+    down_sample.setInputCloud(pcl_cloud);
+    down_sample.setLeafSize(0.01f, 0.01f, 0.01f);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
+    down_sample.filter(*pcl_cloud_filtered);
+
+
     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-    ne.setInputCloud(pcl_cloud);
+    ne.setInputCloud(pcl_cloud_filtered);
 
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
     ne.setSearchMethod(tree);
@@ -26,7 +35,7 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
     ne.compute(*normals);
 
     pcl::PointCloud<pcl::PointNormal>::Ptr pcl_normals(new pcl::PointCloud<pcl::PointNormal>);
-    pcl::concatenateFields(*pcl_cloud, *normals, *pcl_normals);
+    pcl::concatenateFields(*pcl_cloud_filtered, *normals, *pcl_normals);
 
     sensor_msgs::PointCloud2 normals_msg;
     pcl::toROSMsg(*pcl_normals, normals_msg);
@@ -41,7 +50,7 @@ void pointCloudCallback(const pcl::PCLPointCloud2ConstPtr& input_cloud_msg) {
 
     for (size_t i = 0; i < pcl_normals->points.size(); ++i) {
         arrow_marker.id = static_cast<int>(i);
-        arrow_marker.points.resize(2);
+        arrow_marker.points.resize(1);
         arrow_marker.points[0].x = pcl_normals->points[i].x;
         arrow_marker.points[0].y = pcl_normals->points[i].y;
         arrow_marker.points[0].z = pcl_normals->points[i].z;

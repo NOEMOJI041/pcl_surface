@@ -122,6 +122,8 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+
 include_directories(${PCL_INCLUDE_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
@@ -141,6 +143,10 @@ add_definitions(${PCL_DEFINITIONS})
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/pcl_surface_node.cpp)
+
+#add_executable (voxel_grid src/boundary.cpp)
+#target_link_libraries (voxel_grid ${PCL_LIBRARIES})
+
 add_executable(ply_extractor src/ply_extractor.cpp)
 target_link_libraries(ply_extractor 
   ${catkin_LIBRARIES}
